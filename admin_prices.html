@@ -1,0 +1,556 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Системные настройки · Invisible Doors</title>
+<style>
+  :root {
+    --dk:#0f1115; --t1:#0f1115; --t2:#5a6068; --t3:#8a8f99;
+    --bo:#e5e7ea; --bg:#f5f6f8; --red:#c0392b; --green:#2e7d32;
+    --orange:#BA7517; --blue:#1565c0;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif; background:var(--bg); color:var(--dk); font-size:13px; }
+
+  /* Главное меню */
+  .nav { width:100%; background:#111; border-bottom:1px solid rgba(255,255,255,.08); display:flex; align-items:center; padding:0 24px; gap:0; position:sticky; top:0; z-index:100; }
+  .nav a { padding:10px 18px; color:rgba(255,255,255,.55); text-decoration:none; font-size:12px; font-weight:600; letter-spacing:.3px; display:inline-flex; align-items:center; gap:6px; }
+  .nav a.active { color:#fff; border-bottom:2px solid #c0392b; }
+  .nav a.new-order { padding:10px 22px; background:#c0392b; color:#fff; font-weight:700; letter-spacing:.5px; border-bottom:2px solid #c0392b; }
+  .nav a:hover:not(.new-order) { color:#fff; background:rgba(255,255,255,.05); }
+  .nav-spacer { flex:1; }
+
+  /* Sub-tabs (Системные настройки) */
+  .subtabs { background:#fff; border-bottom:1px solid var(--bo); padding:0 24px; display:flex; gap:0; position:sticky; top:42px; z-index:99; }
+  .subtab { padding:14px 22px; background:transparent; border:none; cursor:pointer; font-size:13px; font-weight:600; color:var(--t2); border-bottom:3px solid transparent; transition:all .15s; }
+  .subtab:hover { color:var(--dk); background:#fafbfc; }
+  .subtab.active { color:var(--red); border-bottom-color:var(--red); }
+
+  .container { max-width:1900px; margin:0 auto; padding:24px; }
+  .page-title { font-size:24px; font-weight:800; margin:0 0 4px; }
+  .page-subtitle { font-size:13px; color:var(--t2); margin-bottom:14px; }
+  .section { display:none; }
+  .section.active { display:block; }
+
+  .top-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .stats { display:flex; gap:14px; align-items:center; }
+  .stat { background:#fff; border:1px solid var(--bo); border-radius:6px; padding:6px 14px; font-size:12px; }
+  .stat b { color:var(--blue); font-size:14px; }
+
+  .btn { padding:9px 18px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:700; border:none; }
+  .btn-save { background:#2e7d32; color:#fff; }
+  .btn-reset { background:#fff; border:1px solid var(--bo); color:var(--t2); }
+  .btn-reset:hover { border-color:var(--red); color:var(--red); }
+  .btn-export { background:#fff; border:1px solid var(--bo); color:var(--t2); }
+  .btn-export:hover { border-color:var(--blue); color:var(--blue); }
+
+  /* === ВНУТРЕННИЕ ВКЛАДКИ В РАЗДЕЛЕ ЦЕНЫ === */
+  .price-tabs { display:flex; gap:4px; background:#eef0f3; padding:4px; border-radius:8px; margin-bottom:18px; flex-wrap:wrap; max-width:fit-content; }
+  .price-tab { padding:8px 16px; background:transparent; border:none; border-radius:5px; cursor:pointer; font-size:13px; font-weight:600; color:var(--t2); transition:all .15s; }
+  .price-tab:hover { background:rgba(255,255,255,0.5); color:var(--dk); }
+  .price-tab.active { background:#fff; color:var(--red); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+  .price-section { display:none; }
+  .price-section.active { display:block; }
+
+  /* === ТАБЛИЦА ПРАЙСА === */
+  .pricetbl-wrap { background:#fff; border:1px solid var(--bo); border-radius:8px; padding:14px; margin-bottom:20px; overflow-x:auto; }
+  .pricetbl-title { font-size:14px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+  .pricetbl-title .tag { background:var(--bg); color:var(--t2); padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+  .pricetbl { border-collapse:collapse; min-width:100%; font-size:12px; }
+  .pricetbl th, .pricetbl td { border:1px solid var(--bo); padding:6px 8px; text-align:right; vertical-align:middle; }
+  .pricetbl th { background:#fafbfc; font-weight:700; color:var(--t1); font-size:11px; line-height:1.3; }
+  .pricetbl th.row-head, .pricetbl td.row-head { background:#fafbfc; text-align:left; font-weight:700; color:var(--t1); min-width:160px; }
+  .pricetbl input { width:100%; padding:5px 6px; border:1px solid transparent; border-radius:3px; font-size:13px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; background:transparent; color:var(--dk); }
+  .pricetbl input:hover { border-color:var(--bo); background:#fafbfc; }
+  .pricetbl input:focus { outline:none; border-color:var(--blue); background:#fff; }
+  .pricetbl input.changed { background:#fff8e1; border-color:#fb8c00; color:#BA7517; }
+  .pricetbl input.disabled { background:#f5f6f8; color:#aaa; cursor:not-allowed; }
+
+  /* === ГРУППЫ ДОП.ОПЦИЙ === */
+  .group { background:#fff; border:1px solid var(--bo); border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .group-head { background:#fafbfc; padding:12px 18px; border-bottom:1px solid var(--bo); display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+  .group-head h3 { margin:0; font-size:14px; font-weight:700; display:flex; align-items:center; gap:10px; }
+  .group-icon { font-size:18px; }
+  .group-count { font-size:11px; color:var(--t3); background:var(--bg); padding:2px 8px; border-radius:10px; }
+  .toggle-arrow { transition:transform .2s; color:var(--t3); }
+  .group.collapsed .toggle-arrow { transform:rotate(-90deg); }
+  .group.collapsed .group-body { display:none; }
+  .group-body { padding:8px 0; }
+
+  .price-row { display:grid; grid-template-columns:1fr 130px 90px; gap:14px; align-items:center; padding:10px 18px; border-bottom:1px solid #f5f6f8; }
+  .price-row:hover { background:#fafbfc; }
+  .price-row.changed { background:#fff8e1; }
+
+  .price-label { font-size:13px; line-height:1.3; }
+  .price-key { font-family:Consolas,monospace; font-size:10px; color:var(--t3); margin-top:2px; display:block; }
+
+  .price-input-wrap { display:flex; align-items:center; gap:6px; }
+  .price-input { width:100%; padding:7px 10px; border:1px solid var(--bo); border-radius:4px; font-size:14px; font-weight:700; text-align:right; font-variant-numeric:tabular-nums; }
+  .price-input:focus { outline:none; border-color:var(--blue); }
+  .price-input.changed { border-color:#fb8c00; background:#fff8e1; }
+
+  .price-default { font-size:11px; color:var(--t3); text-align:right; }
+  .price-default.changed { color:#fb8c00; font-weight:700; }
+
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:6px; color:#fff; font-weight:700; font-size:13px; z-index:1000; opacity:0; transition:all .25s; pointer-events:none; box-shadow:0 4px 16px rgba(0,0,0,.2); }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(-4px); }
+
+  .placeholder { background:#fff; border:1px dashed var(--bo); border-radius:8px; padding:60px 30px; text-align:center; color:var(--t3); }
+  .placeholder h3 { margin:0 0 8px; color:var(--t2); font-weight:700; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="cart.html?new=1" class="new-order">📋 НОВЫЙ ЗАКАЗ</a>
+  <div class="nav-spacer"></div>
+  <a href="index.html">📁 Заказы</a>
+  <a href="prod_doors.html">🚪 Производство дверей</a>
+  <a href="schedule.html">📅 Планирование</a>
+  <a href="warehouse.html">📦 Склад СГП</a>
+  <a href="sklad.html">🧰 Склад материалов</a>
+  <a href="finansi.html">💰 Финансы</a>
+  <a href="admin_prices.html" class="active">⚙️ Системные настройки</a>
+</nav>
+
+<div class="subtabs">
+  <button class="subtab active" data-tab="prices" onclick="switchTab('prices')">💰 Цены</button>
+  <a href="tehprocess.html" class="subtab" style="text-decoration:none;display:inline-block">⚙️ Техпроцесс</a>
+  <button class="subtab" data-tab="general" onclick="switchTab('general')">⚙️ Общие</button>
+  <button class="subtab" data-tab="integrations" onclick="switchTab('integrations')">🔌 Интеграции</button>
+  <button class="subtab" data-tab="users" onclick="switchTab('users')">👤 Пользователи</button>
+</div>
+
+<div class="container">
+
+  <!-- ═══ ЦЕНЫ ═══ -->
+  <div class="section active" id="section-prices">
+    <h1 class="page-title">💰 Управление ценами</h1>
+    <div class="page-subtitle">Изменения сохраняются автоматически и применяются в калькуляторе мгновенно. Структура цен соответствует Excel-прайсу.</div>
+
+    <div class="top-bar">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-reset" onclick="resetAll()">↺ Сбросить всё к дефолтам</button>
+        <button class="btn btn-export" onclick="exportPrices()">📋 Экспорт JSON</button>
+      </div>
+      <div class="stats">
+        <div class="stat">Изменено: <b id="stat-changed">0</b></div>
+        <div class="stat">Всего: <b id="stat-total">0</b></div>
+      </div>
+    </div>
+
+    <!-- Внутренние вкладки внутри раздела «Цены» -->
+    <div class="price-tabs">
+      <button class="price-tab active" data-pricetab="karkas" onclick="switchPriceTab('karkas')">🚪 Каркас Дерево (ДВ-40 + ДВ-55)</button>
+      <button class="price-tab" data-pricetab="premium" onclick="switchPriceTab('premium')">⭐ Премиум ДВ-60</button>
+      <button class="price-tab" data-pricetab="magic" onclick="switchPriceTab('magic')">🪄 Magic / Loft + Пеналы</button>
+      <button class="price-tab" data-pricetab="dop" onclick="switchPriceTab('dop')">🔧 Доп. опции и наценки</button>
+    </div>
+
+    <!-- ─── КАРКАС ДЕРЕВО ─── -->
+    <div class="price-section active" id="ptab-karkas">
+      <div id="tbl-dv40"></div>
+      <div id="tbl-dv55"></div>
+    </div>
+
+    <!-- ─── ПРЕМИУМ ─── -->
+    <div class="price-section" id="ptab-premium">
+      <div id="tbl-dv60"></div>
+    </div>
+
+    <!-- ─── MAGIC / LOFT + ПЕНАЛЫ ─── -->
+    <div class="price-section" id="ptab-magic">
+      <div id="tbl-magic-mech"></div>
+      <div id="tbl-loft-mech"></div>
+      <div id="tbl-penal-uno"></div>
+      <div id="tbl-penal-duo"></div>
+    </div>
+
+    <!-- ─── ДОП. ОПЦИИ ─── -->
+    <div class="price-section" id="ptab-dop">
+      <div id="dop-groups"></div>
+    </div>
+  </div>
+
+  <!-- ═══ ОБЩИЕ ═══ -->
+  <div class="section" id="section-general">
+    <h1 class="page-title">⚙️ Общие настройки</h1>
+    <div class="placeholder">
+      <h3>Раздел в разработке</h3>
+      <p>Реквизиты компании, нумерация заказов, шаблоны документов.</p>
+    </div>
+  </div>
+
+  <div class="section" id="section-integrations">
+    <h1 class="page-title">🔌 Интеграции</h1>
+    <div class="placeholder">
+      <h3>Раздел в разработке</h3>
+      <p>Bitrix24 / AmoCRM / Telegram-бот / SMTP.</p>
+    </div>
+  </div>
+
+  <div class="section" id="section-users">
+    <h1 class="page-title">👤 Пользователи</h1>
+    <div class="placeholder">
+      <h3>Раздел в разработке</h3>
+      <p>Менеджеры и роли доступа.</p>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="storage.js"></script>
+<script src="prices.js"></script>
+<script>
+// ═══ ВКЛАДКИ ═══
+function switchTab(tabId) {
+  document.querySelectorAll('.subtab').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === 'section-' + tabId));
+}
+function switchPriceTab(id) {
+  document.querySelectorAll('.price-tab').forEach(b => b.classList.toggle('active', b.dataset.pricetab === id));
+  document.querySelectorAll('.price-section').forEach(s => s.classList.toggle('active', s.id === 'ptab-' + id));
+}
+
+function showToast(msg, color){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color || '#333';
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+// ═══ КОНФИГ ТАБЛИЦ ═══
+// Заголовки колонок и порядок для каждой матрицы дверей
+const TABLE_CONFIGS = {
+  dv40: {
+    title: '🚪 MagicLOFT — ДВ-40 (раздвижные / Magic / Loft / Penal)',
+    note: 'Цены из вкладки прайса «MagicLOFT». 4 высотных диапазона. Зеркало добавляется отдельно (за шт). У ДВ-40 нет столбцов «Зеркало ПВХ/AL» — вместо этого добавляется фикс.доплата за зеркало.',
+    rows: [
+      {key:'h2000', name:'2000мм'},
+      {key:'h2100', name:'Любой нестандарт до 2100мм'},
+      {key:'h2400', name:'2110мм - 2400мм'},
+      {key:'h3000', name:'2410мм - 3000мм'},
+    ],
+    cols: [
+      {key:'pod_pokras',    name:'Под покрас'},
+      {key:'ral_mat',       name:'RAL матовый'},
+      {key:'ral_supermat',  name:'RAL супермат'},
+      {key:'ral_glanec',    name:'RAL глянец'},
+      {key:'spon_standart', name:'Шпон стандарт'},
+      {key:'spon_lux',      name:'Шпон Lux'},
+      {key:'spon_lux_plus', name:'Шпон Lux+'},
+      {key:'add_zerkalo',   name:'Доб. ЗЕРКАЛО (за шт)'},
+      {key:'plenka_al',     name:'Плёнка+AL до 850мм'},
+    ],
+  },
+  dv55: {
+    title: '🚪 Каркас Дерево — ДВ-55 (базовая, внутр./внешн. открывание)',
+    note: 'Полный набор покрытий. Зеркало ПВХ — со штатной кромкой ПВХ; Зеркало AL — с алюминиевой кромкой хром/чёрная.',
+    rows: [
+      {key:'h2000', name:'ДВ-55 2000мм'},
+      {key:'h2199', name:'ДВ-55 до 2000мм от 2010-2199мм'},
+      {key:'h2300', name:'ДВ-55 2200мм-2300мм'},
+      {key:'h2400', name:'ДВ-55 2310мм-2400мм'},
+      {key:'h2700', name:'ДВ-55 2410мм-2700мм'},
+      {key:'h3000', name:'ДВ-55 2710мм-3000мм'},
+    ],
+    cols: [
+      {key:'pod_pokras',    name:'Под покрас'},
+      {key:'zerk_pvh_1',    name:'Зеркало кромка ПВХ — 1ст'},
+      {key:'zerk_pvh_2',    name:'Зеркало кромка ПВХ — 2ст'},
+      {key:'zerk_al_1',     name:'Зеркало AL кромка — 1ст'},
+      {key:'zerk_al_2',     name:'Зеркало AL кромка — 2ст'},
+      {key:'ral_glanec',    name:'RAL глянец'},
+      {key:'ral_mat',       name:'RAL матовый'},
+      {key:'ral_supermat',  name:'RAL супермат'},
+      {key:'spon_standart', name:'Шпон Стандарт+AL'},
+      {key:'spon_lux',      name:'Шпон Lux+AL'},
+      {key:'spon_lux_plus', name:'Шпон Lux+ AL'},
+      {key:'plenka_al',     name:'Плёнка+AL до 850мм'},
+      {key:'add_zerkalo',   name:'Доб. ЗЕРКАЛО (за шт)'},
+    ],
+  },
+  dv60: {
+    title: '⭐ ПРЕМИУМ ДВ-60',
+    note: 'Премиальное полотно уже включает: AL кромку хром/чёрная, шумоизоляцию, УВС (при h>2400), петли Armadillo, замок AGB. У ДВ-60 нет «Зеркало ПВХ».',
+    rows: [
+      {key:'h2000', name:'ДВ-60 2000мм'},
+      {key:'h2199', name:'ДВ-60 до 2000мм от 2010-2199мм'},
+      {key:'h2300', name:'ДВ-60 2200мм-2300мм'},
+      {key:'h2400', name:'ДВ-60 2310мм-2400мм'},
+      {key:'h2700', name:'ДВ-60 2410мм-2700мм'},
+      {key:'h3000', name:'ДВ-60 2710мм-3000мм'},
+    ],
+    cols: [
+      {key:'pod_pokras',    name:'Под покрас'},
+      {key:'zerk_al_1',     name:'Зеркало AL — 1ст'},
+      {key:'zerk_al_2',     name:'Зеркало AL — 2ст'},
+      {key:'ral_glanec',    name:'RAL глянец'},
+      {key:'ral_mat',       name:'RAL матовый'},
+      {key:'ral_supermat',  name:'RAL супермат'},
+      {key:'spon_standart', name:'Шпон Стандарт'},
+      {key:'spon_lux',      name:'Шпон Lux'},
+      {key:'spon_lux_plus', name:'Шпон Lux+'},
+      {key:'plenka_al',     name:'Плёнка'},
+      {key:'add_zerkalo',   name:'Доб. ЗЕРКАЛО'},
+    ],
+  },
+  penal_uno: {
+    title: '🛏️ Пеналы УНО (одно полотно)',
+    note: 'Цена включает: металлический короб + механизм. Полотно для пенала — отдельно из ДВ-40.',
+    rows: [
+      {key:'h2100', name:'2000, 2100мм'},
+      {key:'h2300', name:'2200, 2300мм'},
+      {key:'h2400', name:'2400мм'},
+      {key:'h2700', name:'2500, 2600, 2700мм'},
+      {key:'h3000', name:'2800, 2900, 3000мм'},
+    ],
+    cols: [
+      {key:'w900',  name:'600/700/800/900'},
+      {key:'w1000', name:'1000мм'},
+      {key:'w1200', name:'1200мм'},
+    ],
+  },
+  penal_duo: {
+    title: '🛏️ Пеналы ДУО (два полотна)',
+    note: 'Цена за металлический короб + механизм для ДУО. Полотна — отдельно из ДВ-40.',
+    rows: [
+      {key:'h2100', name:'2000, 2100мм'},
+      {key:'h2300', name:'2200, 2300мм'},
+      {key:'h2400', name:'2400мм'},
+      {key:'h2700', name:'2500, 2600, 2700мм'},
+      {key:'h3000', name:'2800, 2900, 3000мм'},
+    ],
+    cols: [
+      {key:'w900',  name:'600/700/800/900'},
+      {key:'w1000', name:'1000мм'},
+      {key:'w1200', name:'1200мм'},
+    ],
+  },
+};
+
+// Группы для механизмов
+const SIMPLE_GROUPS = {
+  magic_mech: {icon:'🪄', name:'Механизмы Magic (доплата к полотну ДВ-40)'},
+  loft:       {icon:'🪟', name:'Механизмы Loft (доплата к полотну ДВ-40)'},
+  markup:     {icon:'📈', name:'Наценки и коэффициенты (% и фикс. ₽)'},
+  dop:        {icon:'🔧', name:'Дополнительные опции (заводская врезка)'},
+  lock:       {icon:'🔐', name:'Замки и ручки'},
+  plintus_pm: {icon:'📏', name:'Плинтус (за п.м.)'},
+  plintus_tenevoy: {icon:'📐', name:'Теневой плинтус'},
+  al_kromka:  {icon:'⚡', name:'AL кромка (распашные двери)'},
+  al_kromka_otkat: {icon:'⚡', name:'AL кромка (откатные)'},
+  korob_addons: {icon:'🎁', name:'Короб / Black Edition / Gold Edition / RAL'},
+  ral_addons: {icon:'🎨', name:'Доплаты к RAL/Лакобель/Цветным зеркалам'},
+  panel:      {icon:'🟫', name:'Панели Egger / HPL / Шпон-панели'},
+  panel_polotno: {icon:'🟫', name:'Полотно-панели (шпон)'},
+  furnitura_color: {icon:'🎨', name:'Замена цвета фурнитуры'},
+  dop_petlya: {icon:'🔩', name:'Доп. петля (для ДВ-55 и ДВ-60)'},
+};
+
+// ═══ РЕНДЕР ТАБЛИЦЫ ПРАЙСА ═══
+function renderPriceTable(containerId, tableKey, configKey) {
+  const cfg = TABLE_CONFIGS[configKey];
+  const wrap = document.getElementById(containerId);
+  if (!wrap || !cfg) return;
+  const table = PRICES[tableKey];
+  if (!table) {
+    const allKeys = Object.keys(PRICES).join(', ');
+    wrap.innerHTML = `<div class="placeholder">
+      <h3>Таблица «${tableKey}» не найдена в prices.js</h3>
+      <p style="color:var(--red); font-weight:600;">⚠ Скорее всего загружена старая версия prices.js (из кэша браузера).</p>
+      <p><b>Что делать:</b></p>
+      <p style="text-align:left; max-width:600px; margin:0 auto;">
+        1. Убедитесь что в репозитории GitHub лежит новый <code>prices.js</code> (47 КБ, должен начинаться с <code>doors_dv40</code>)<br>
+        2. Очистите кэш браузера: <b>Cmd+Shift+R</b> (Mac) или <b>Ctrl+F5</b> (Windows)<br>
+        3. Откройте консоль (F12) и выполните: <code>Object.keys(PRICES)</code>
+      </p>
+      <details style="margin-top:14px; text-align:left; max-width:700px; margin-left:auto; margin-right:auto;">
+        <summary style="cursor:pointer; font-weight:600;">📋 Что сейчас загружено в браузере (${Object.keys(PRICES).length} категорий)</summary>
+        <pre style="font-size:11px; background:#f5f6f8; padding:10px; border-radius:4px; overflow-x:auto; margin-top:8px;">${allKeys}</pre>
+      </details>
+    </div>`;
+    return;
+  }
+
+  let html = `<div class="pricetbl-wrap">
+    <div class="pricetbl-title">${cfg.title} <span class="tag">${tableKey}</span></div>
+    <div style="font-size:11px; color:var(--t2); margin-bottom:10px;">${cfg.note || ''}</div>
+    <table class="pricetbl"><thead><tr><th class="row-head">Высота</th>`;
+  cfg.cols.forEach(c => {
+    html += `<th>${c.name}</th>`;
+  });
+  html += `</tr></thead><tbody>`;
+
+  cfg.rows.forEach(row => {
+    html += `<tr><td class="row-head">${row.name}</td>`;
+    cfg.cols.forEach(col => {
+      const cellKey = row.key + '_' + col.key;
+      const item = table[cellKey];
+      if (!item) {
+        html += `<td><input type="text" value="—" class="disabled" disabled></td>`;
+      } else {
+        const path = tableKey + '.' + cellKey;
+        const def = PRICES_DEFAULTS[tableKey][cellKey].val;
+        const cur = item.val;
+        const changed = def !== cur;
+        html += `<td><input type="number" min="0" step="100" value="${cur}"
+                  data-path="${path}" data-default="${def}"
+                  class="${changed ? 'changed' : ''}"
+                  oninput="onPriceChange(this)" onchange="onPriceChange(this)"></td>`;
+      }
+    });
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  wrap.innerHTML = html;
+}
+
+// ═══ РЕНДЕР ПРОСТОЙ ГРУППЫ (для допов и наценок) ═══
+function renderSimpleGroup(cat) {
+  const meta = SIMPLE_GROUPS[cat];
+  if (!meta) return '';
+  const items = PRICES[cat];
+  if (!items) return '';
+  const keys = Object.keys(items);
+
+  let html = `<div class="group" id="g_${cat}">
+    <div class="group-head" onclick="toggleGroup('g_${cat}')">
+      <h3><span class="group-icon">${meta.icon}</span> ${meta.name} <span class="group-count">${keys.length}</span></h3>
+      <span class="toggle-arrow">▼</span>
+    </div>
+    <div class="group-body">`;
+
+  keys.forEach(key => {
+    const item = items[key];
+    const def = PRICES_DEFAULTS[cat][key].val;
+    const cur = item.val;
+    const changed = def !== cur;
+    const path = cat + '.' + key;
+    const isPercent = cat === 'markup' && !key.startsWith('nonstandard');
+    const unit = isPercent ? '%' : '₽';
+
+    html += `<div class="price-row ${changed ? 'changed' : ''}">
+      <div class="price-label">${item.label}<span class="price-key">${path}</span></div>
+      <div class="price-input-wrap">
+        <input type="number" min="0" step="${isPercent ? 1 : 100}" class="price-input ${changed ? 'changed' : ''}"
+               value="${cur}" data-path="${path}" data-default="${def}"
+               oninput="onPriceChange(this)" onchange="onPriceChange(this)">
+        <span style="font-size:11px; color:var(--t3);">${unit}</span>
+      </div>
+      <div class="price-default ${changed ? 'changed' : ''}">
+        ${changed ? `было: ${def.toLocaleString('ru-RU')}` : 'дефолт'}
+      </div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  return html;
+}
+
+function toggleGroup(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+// ═══ ОБРАБОТЧИК ИЗМЕНЕНИЯ ═══
+function onPriceChange(input) {
+  const path = input.dataset.path;
+  const def = parseInt(input.dataset.default, 10);
+  const newVal = parseInt(input.value, 10) || 0;
+  savePriceOverride(path, newVal);
+  const changed = newVal !== def;
+  input.classList.toggle('changed', changed);
+  // Обновим класс родительской строки если есть
+  const row = input.closest('.price-row');
+  if (row) {
+    row.classList.toggle('changed', changed);
+    const defLabel = row.querySelector('.price-default');
+    if (defLabel) {
+      defLabel.classList.toggle('changed', changed);
+      defLabel.textContent = changed ? `было: ${def.toLocaleString('ru-RU')}` : 'дефолт';
+    }
+  }
+  countChanges();
+  showToast('✓ Сохранено', '#2e7d32');
+}
+
+function countChanges() {
+  let total = 0, changed = 0;
+  Object.keys(PRICES).forEach(cat => {
+    Object.keys(PRICES[cat]).forEach(key => {
+      total++;
+      if (PRICES_DEFAULTS[cat][key].val !== PRICES[cat][key].val) changed++;
+    });
+  });
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-changed').textContent = changed;
+}
+
+function resetAll() {
+  if (!confirm('Сбросить ВСЕ изменённые цены к дефолтам? Это действие нельзя отменить.')) return;
+  resetAllPrices();
+  Object.keys(PRICES).forEach(cat => {
+    Object.keys(PRICES[cat]).forEach(key => {
+      PRICES[cat][key].val = PRICES_DEFAULTS[cat][key].val;
+    });
+  });
+  renderAll();
+  countChanges();
+  showToast('↺ Все цены сброшены к дефолтам', '#1565c0');
+}
+
+function exportPrices() {
+  const overrides = {};
+  Object.keys(PRICES).forEach(cat => {
+    Object.keys(PRICES[cat]).forEach(key => {
+      const def = PRICES_DEFAULTS[cat][key].val;
+      const cur = PRICES[cat][key].val;
+      if (def !== cur) overrides[cat + '.' + key] = cur;
+    });
+  });
+  const data = {
+    exported_at: new Date().toISOString(),
+    changes_count: Object.keys(overrides).length,
+    overrides: overrides,
+  };
+  const json = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(json).then(() => {
+    showToast(`📋 Скопировано в буфер (${Object.keys(overrides).length} изм.)`, '#1565c0');
+  }).catch(() => {
+    prompt('Скопируйте этот JSON:', json);
+  });
+}
+
+// ═══ РЕНДЕРИМ ВСЁ ═══
+function renderAll() {
+  // Каркас Дерево
+  renderPriceTable('tbl-dv40', 'doors_dv40', 'dv40');
+  renderPriceTable('tbl-dv55', 'doors_dv55', 'dv55');
+  // Премиум
+  renderPriceTable('tbl-dv60', 'doors_dv60', 'dv60');
+  // Magic / Loft + Пеналы
+  document.getElementById('tbl-magic-mech').innerHTML = renderSimpleGroup('magic_mech');
+  document.getElementById('tbl-loft-mech').innerHTML = renderSimpleGroup('loft');
+  renderPriceTable('tbl-penal-uno', 'penal_uno', 'penal_uno');
+  renderPriceTable('tbl-penal-duo', 'penal_duo', 'penal_duo');
+  // Доп. опции
+  let dopHtml = '';
+  ['markup', 'dop', 'lock', 'al_kromka', 'al_kromka_otkat', 'dop_petlya',
+   'plintus_pm', 'plintus_tenevoy', 'korob_addons', 'ral_addons',
+   'panel', 'panel_polotno', 'furnitura_color'].forEach(cat => {
+    dopHtml += renderSimpleGroup(cat);
+  });
+  document.getElementById('dop-groups').innerHTML = dopHtml;
+}
+
+renderAll();
+countChanges();
+</script>
+</body>
+</html>

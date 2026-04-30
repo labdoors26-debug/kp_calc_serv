@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход · Invisible Doors</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:#f5f6f8;color:#0f1115;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .card{background:#fff;border:1px solid #e5e7ea;border-radius:8px;padding:40px;width:320px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  h1{font-size:18px;font-weight:700;margin-bottom:8px;color:#0f1115}
+  .sub{font-size:12px;color:#5a6068;margin-bottom:28px}
+  .logo{color:#c0392b;margin-right:6px}
+  label{display:block;font-size:12px;font-weight:600;color:#5a6068;margin-bottom:6px;letter-spacing:.3px;text-transform:uppercase}
+  input{width:100%;border:1px solid #e5e7ea;border-radius:4px;padding:10px 12px;font-size:14px;outline:none;transition:border .15s;font-family:inherit}
+  input:focus{border-color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.08)}
+  button{margin-top:20px;width:100%;background:#c0392b;color:#fff;border:none;border-radius:4px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;font-family:inherit}
+  button:hover{background:#a93226}
+  button:disabled{background:#ccc;cursor:not-allowed}
+  .err{color:#c0392b;font-size:13px;margin-top:12px;display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1><span class="logo">&#9632;</span> Invisible Doors</h1>
+  <p class="sub">Системный доступ</p>
+  <label for="pwd">Пароль</label>
+  <input type="password" id="pwd" placeholder="Введите пароль" autofocus>
+  <button id="btn">Войти</button>
+  <div class="err" id="err">Неверный пароль</div>
+</div>
+<script>
+function doLogin() {
+  var pwd = document.getElementById('pwd').value;
+  var err = document.getElementById('err');
+  var btn = document.getElementById('btn');
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Проверяем...';
+  fetch('api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'login', password: pwd }),
+    credentials: 'same-origin'
+  }).then(function (r) {
+    return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+  }).then(function (res) {
+    if (res.ok && res.data.ok) {
+      window.location.href = 'index.html';
+    } else {
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Войти';
+    }
+  }).catch(function () {
+    err.textContent = 'Ошибка соединения с сервером';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Войти';
+  });
+}
+document.getElementById('btn').addEventListener('click', doLogin);
+document.getElementById('pwd').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>

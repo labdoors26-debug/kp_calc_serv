@@ -1,0 +1,1177 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Склад готовой продукции · Invisible Doors</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --border: #e4e6ea;
+    --border-soft: #eef0f3;
+    --ink: #0f1115;
+    --ink-2: #4a4f57;
+    --ink-3: #8a8f99;
+    --accent-soft: #f0f1f4;
+    --blue: #2563eb;
+    --blue-soft: #eef4ff;
+    --green: #16a34a;
+    --green-soft: #dcfce7;
+    --amber: #d97706;
+    --amber-soft: #fef3c7;
+    --red: #dc2626;
+    --red-soft: #fee2e2;
+    --shadow-sm: 0 1px 2px rgba(15,17,21,.04);
+    --shadow-md: 0 4px 12px rgba(15,17,21,.08);
+    --shadow-lg: 0 12px 32px rgba(15,17,21,.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Manrope', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Шапка */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar h1 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar h1::before {
+    content: "";
+    width: 8px; height: 8px;
+    background: var(--ink);
+    transform: rotate(45deg);
+  }
+  .topbar .breadcrumb-sep { color: var(--ink-3); font-weight: 400; }
+  .topbar .stats {
+    margin-left: auto;
+    display: flex; gap: 24px;
+    font-size: 12px; color: var(--ink-2);
+  }
+  .topbar .stats b { color: var(--ink); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .topbar .nav-btn {
+    padding: 6px 12px;
+    background: var(--accent-soft);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .topbar .nav-btn:hover { background: var(--ink); color: #fff; }
+
+  /* Тулбар */
+  .toolbar {
+    background: var(--surface);
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .toolbar input, .toolbar select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+    font-size: 13px;
+  }
+  .toolbar input:focus, .toolbar select:focus {
+    outline: none;
+    border-color: var(--ink);
+  }
+  .toolbar input.search { min-width: 280px; }
+  .toolbar button {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12.5px;
+  }
+  .toolbar button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .toolbar button:hover { border-color: var(--ink); }
+  .toolbar .legend {
+    margin-left: auto;
+    display: flex; gap: 14px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .toolbar .legend span {
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .toolbar .legend i {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* Главный контейнер */
+  .main {
+    padding: 22px 24px;
+    max-width: 1500px;
+    margin: 0 auto;
+  }
+
+  /* Зона */
+  .zone {
+    margin-bottom: 28px;
+  }
+  .zone-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .zone-header h2 {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0;
+    color: var(--ink);
+  }
+  .zone-header .zone-tag {
+    padding: 2px 8px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .zone-header .zone-tag.z { background: #ec4899; }
+  .zone-header .zone-tag.x { background: #f59e0b; color: #1a1d23; }
+  .zone-header .zone-tag.y { background: #2563eb; }
+  .zone-header .zone-meta {
+    color: var(--ink-3);
+    font-size: 12px;
+  }
+  .zone-header .zone-meta b { color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+
+  /* Ряд ячеек */
+  .row-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .row-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 18px;
+    width: 30px;
+    color: var(--ink);
+  }
+  .row-cells {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    flex-wrap: wrap;
+  }
+  .row-meta {
+    font-size: 11px;
+    color: var(--ink-3);
+    text-align: right;
+    min-width: 100px;
+  }
+  .row-meta b { color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+
+  /* Ячейка */
+  .cell {
+    width: 80px;
+    height: 80px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: var(--green-soft);
+    color: var(--green);
+    transition: all .15s;
+    position: relative;
+    text-align: center;
+  }
+  .cell:hover {
+    border-color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+  /* Цветовая логика: зелёная = свободна, амбер = частично, красная = полная */
+  .cell.empty {
+    background: var(--green-soft);
+    color: var(--green);
+    border-color: #bbf7d0;
+  }
+  .cell.partial {
+    background: var(--amber-soft);
+    color: var(--amber);
+    border-color: #fde68a;
+  }
+  .cell.full {
+    background: var(--red-soft);
+    color: var(--red);
+    border-color: #fecaca;
+  }
+  .cell.matched {
+    box-shadow: 0 0 0 3px var(--blue), var(--shadow-md);
+    border-color: var(--blue);
+    z-index: 2;
+  }
+  .cell-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .cell-meta {
+    font-size: 10px;
+    margin-top: 4px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .cell-osize-mark {
+    position: absolute;
+    top: 4px; right: 4px;
+    font-size: 9px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 700;
+  }
+
+  /* Резервные ряды */
+  .row-block.reserved {
+    background: repeating-linear-gradient(45deg, var(--accent-soft), var(--accent-soft) 8px, transparent 8px, transparent 16px);
+    color: var(--ink-3);
+  }
+  .row-block.reserved .row-cells {
+    color: var(--ink-3);
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  /* Модалка */
+  .modal-back {
+    position: fixed; inset: 0;
+    background: rgba(15,17,21,.6);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    max-width: 700px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .modal-h {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .modal-h h3 { margin: 0; font-size: 16px; font-weight: 800; }
+  .modal-h .close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--ink-3);
+  }
+  .modal-h .close:hover { color: var(--ink); }
+  .modal-b { padding: 18px 22px; }
+  .modal-f {
+    padding: 14px 22px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  /* Список дверей в ячейке */
+  .door-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .door-row .ord {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 110px;
+  }
+  .door-row .art {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    min-width: 160px;
+  }
+  .door-row .info {
+    flex: 1;
+    color: var(--ink-2);
+    font-size: 12px;
+  }
+  .door-row .actions {
+    display: flex;
+    gap: 6px;
+  }
+  .door-row button {
+    padding: 5px 10px;
+    background: var(--accent-soft);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .door-row button.primary {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+  }
+  .door-row button:hover { border-color: var(--ink); }
+
+  /* Этикетка */
+  .label-preview {
+    width: 380px;
+    background: #fff;
+    border: 2px solid var(--ink);
+    padding: 14px;
+    margin: 0 auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .label-preview .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed #ccc;
+  }
+  .label-preview .row b {
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .label-preview h3 {
+    font-size: 14px;
+    margin: 0 0 8px;
+    text-align: center;
+    font-family: 'Manrope', sans-serif;
+  }
+  .label-preview .qr {
+    width: 100px; height: 100px;
+    margin: 12px auto 8px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .label-preview .cell-big {
+    text-align: center;
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 4px;
+  }
+  .label-preview .cell-big .cell-code {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 2px;
+  }
+  .label-preview .cell-big .cell-lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--ink-3);
+  }
+  .empty-state h3 {
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="prod_doors.html" class="nav-btn">← Назад</a>
+  <h1>Invisible Doors <span class="breadcrumb-sep">/</span> Склад готовой продукции</h1>
+  <div class="stats">
+    <span>Занято: <b id="stat-used">0</b> / <b id="stat-total">0</b> мест</span>
+    <span>Дверей: <b id="stat-doors">0</b></span>
+    <span>Загрузка: <b id="stat-load">0%</b></span>
+  </div>
+  <a href="prod_doors.html" class="nav-btn">🏭 Производство</a>
+  <a href="schedule.html" class="nav-btn">📅 Модерация</a>
+  <a href="cart.html" class="nav-btn">📋 Корзина</a>
+  <a href="./index.html" class="nav-btn" style="background:var(--red-soft); color:var(--red); border-color:#fecaca;">Выход</a>
+</header>
+
+<div class="toolbar">
+  <input type="text" class="search" id="search-input" placeholder="🔍 Поиск по № заказа или артикулу (например, ORD-2604-07)">
+  <select id="filter-zone">
+    <option value="">Все зоны</option>
+    <option value="z">Зона Z (зеркала)</option>
+    <option value="x">Зона X</option>
+    <option value="y">Зона Y</option>
+  </select>
+  <select id="filter-status">
+    <option value="">Все ячейки</option>
+    <option value="empty">Свободные</option>
+    <option value="partial">Частично занятые</option>
+    <option value="full">Полные</option>
+  </select>
+  <button id="btn-clear-filters">Сбросить</button>
+
+  <div class="legend">
+    <span><i style="background:var(--green-soft); border:1.5px solid #bbf7d0;"></i> Свободна</span>
+    <span><i style="background:var(--amber-soft); border:1.5px solid #fde68a;"></i> Частично</span>
+    <span><i style="background:var(--red-soft); border:1.5px solid #fecaca;"></i> Полная</span>
+  </div>
+</div>
+
+<!-- Блок результатов поиска (показывается только при активном поиске) -->
+<div class="main" id="search-results" style="display:none; padding-bottom:0;">
+  <div style="background:#fff; border:2px solid var(--blue); border-radius:10px; padding:18px 20px; margin-bottom:24px; box-shadow:var(--shadow-md);">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+      <span style="font-size:18px;">🔍</span>
+      <div style="font-weight:800; color:var(--ink);" id="search-results-title">Найдено: 0</div>
+      <button id="btn-take-all-order" style="margin-left:auto; padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700; font-size:13px; display:none;">📤 Забрать весь заказ — отгрузить</button>
+    </div>
+    <div id="search-results-list"></div>
+  </div>
+</div>
+
+<div class="main" id="warehouse-grid">
+  <!-- Заполняется JS -->
+</div>
+
+<!-- Модалка ячейки -->
+<div class="modal-back" id="cell-modal">
+  <div class="modal">
+    <div class="modal-h">
+      <h3 id="cell-title">Ячейка ?</h3>
+      <span id="cell-meta-info" style="color:var(--ink-3); font-size:12px; font-weight:600;"></span>
+      <button class="close" onclick="closeCellModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <div id="cell-doors-list"></div>
+      <div id="cell-empty-msg" style="display:none; padding:30px; text-align:center; color:var(--ink-3);">
+        Ячейка пуста
+      </div>
+    </div>
+    <div class="modal-f">
+      <button onclick="closeCellModal()">Закрыть</button>
+      <button class="primary" id="btn-ship-cell" onclick="shipAllInCell()" style="background:var(--green); color:#fff; border-color:var(--green); padding:8px 16px;">📤 Отгрузить всю ячейку</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка этикетки -->
+<div class="modal-back" id="label-modal">
+  <div class="modal">
+    <div class="modal-h">
+      <h3>Этикетка</h3>
+      <button class="close" onclick="closeLabelModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <div id="label-content"></div>
+    </div>
+    <div class="modal-f">
+      <button onclick="closeLabelModal()">Закрыть</button>
+      <button class="primary" id="btn-print-label" style="background:var(--ink); color:#fff; border-color:var(--ink); padding:8px 16px;">🖨 Печать</button>
+    </div>
+  </div>
+</div>
+
+<script src="storage.js"></script>
+<script>
+// =============================================================================
+// СТРУКТУРА СКЛАДА
+// =============================================================================
+// Структура: row -> [{num, capacity, isOversize, isGlassOnly, maxHeight}]
+// Зоны: Z (зеркала, KLMN) — 35%, X (OP) — 20%, Y (ABCDEFGH) — 45%
+// Высота: всё <2700 кроме негабаритных (0) и KLMN которые любые
+
+const WAREHOUSE_STRUCTURE = (() => {
+  const data = {
+    'A': [{n:1,c:13},{n:2,c:13},{n:3,c:13},{n:4,c:13},{n:5,c:15},{n:0,c:4,oversize:true}],
+    'B': [{n:1,c:13},{n:2,c:13},{n:3,c:13},{n:4,c:13},{n:5,c:15},{n:0,c:4,oversize:true}],
+    'C': [{n:1,c:13},{n:2,c:13},{n:3,c:13},{n:4,c:13},{n:5,c:15},{n:0,c:4,oversize:true}],
+    'D': [{n:1,c:13},{n:2,c:13},{n:3,c:13},{n:4,c:13},{n:0,c:4,oversize:true}],
+    'E': [{n:1,c:13},{n:2,c:13},{n:3,c:13},{n:4,c:13},{n:5,c:15},{n:0,c:4,oversize:true}],
+    'F': [{n:1,c:13},{n:2,c:13},{n:3,c:13},{n:4,c:13},{n:5,c:15},{n:0,c:4,oversize:true}],
+    'G': [{n:1,c:13},{n:2,c:13},{n:3,c:13},{n:4,c:13},{n:5,c:15},{n:0,c:4,oversize:true}],
+    'H': [{n:1,c:11},{n:2,c:11},{n:3,c:11},{n:4,c:11},{n:5,c:11},{n:0,c:4,oversize:true}],
+    // I, J — резервные для перегородок
+    'I': [],
+    'J': [],
+    'K': [{n:1,c:3},{n:2,c:4},{n:3,c:4},{n:4,c:4}],
+    'L': [{n:1,c:3},{n:2,c:4},{n:3,c:4},{n:4,c:4}],
+    'M': [{n:1,c:3},{n:2,c:4},{n:3,c:4},{n:4,c:4}],
+    'N': [{n:1,c:3},{n:2,c:4},{n:3,c:4},{n:4,c:4}],
+    'O': [{n:1,c:13},{n:2,c:11},{n:3,c:11},{n:0,c:4,oversize:true}],
+    'P': [{n:1,c:13},{n:2,c:11},{n:3,c:11},{n:4,c:13},{n:0,c:4,oversize:true}],
+  };
+  // Помечаем зоны и зеркальные
+  const result = {};
+  Object.entries(data).forEach(([row, cells]) => {
+    let zone = 'y';  // по умолчанию основная
+    let isGlass = false;
+    let isReserved = false;
+    if (['K','L','M','N'].includes(row)) {
+      zone = 'z';
+      isGlass = true;
+    }
+    if (['O','P'].includes(row)) zone = 'x';
+    if (['I','J'].includes(row)) {
+      isReserved = true;
+      zone = 'reserved';
+    }
+    result[row] = {
+      row,
+      zone,
+      isGlass,
+      isReserved,
+      cells: cells.map(c => ({
+        row, num: c.n, capacity: c.c,
+        isOversize: !!c.oversize,
+        // высота 2700 везде кроме KLMN (там любая) и негабаритных
+        maxHeight: (isGlass || c.oversize) ? null : 2700,
+      })),
+    };
+  });
+  return result;
+})();
+
+// Хранение: ключ ячейки → массив дверей
+// localStorage.idloft_warehouse = { "A1": [{orderNum, article, ...}, ...], "B2": [...] }
+const WH_KEY = 'idloft_warehouse';
+const STAGES_KEY = 'idloft_doorStages';
+const ORDERS_KEY = 'idloft_orders';
+
+function loadWarehouse() {
+  try { return JSON.parse(localStorage.getItem(WH_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+function saveWarehouse(wh) {
+  localStorage.setItem(WH_KEY, JSON.stringify(wh));
+}
+function loadStages() {
+  try { return JSON.parse(localStorage.getItem(STAGES_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+// =============================================================================
+// АЛГОРИТМ РАЗМЕЩЕНИЯ
+// =============================================================================
+// Правила:
+//  1. Зеркала/стёкла → ТОЛЬКО в зону Z (KLMN)
+//  2. Высота >2700 → только в негабаритные ячейки (0) или KLMN
+//  3. Высота >2400 — желательно в KLMN или негабарит
+//  4. Один заказ в одну ячейку (не дробить если возможно)
+//  5. Соотношение зон: Z=35%, X=20%, Y=45% по приоритету заполнения
+//  6. Короба (article содержит KOROB) — складываются комплектами по 4 в той же ячейке заказа
+
+function pickCellForDoor(door, warehouse, orderNum) {
+  // door: { article, height, hasMirror, isOversize, isKorob }
+  const isOversize = door.isOversize || (door.height && door.height > 2700);
+  const isMirror = door.hasMirror;
+
+  // Список ячеек в порядке предпочтения
+  const candidates = [];
+  Object.values(WAREHOUSE_STRUCTURE).forEach(rowData => {
+    if (rowData.isReserved) return;
+    rowData.cells.forEach(cell => {
+      // Для зеркал только KLMN (зона Z)
+      if (isMirror && rowData.zone !== 'z') return;
+      // Зону Z (KLMN) бережём для зеркал — обычные двери туда только если нет места в Y/X
+      // (но не блокируем полностью)
+      if (!isMirror && rowData.zone === 'z') {
+        // Можно класть, но с пенальти
+      }
+      // Негабарит >2700 → только в isOversize или KLMN
+      if (isOversize && !cell.isOversize && rowData.zone !== 'z') return;
+      // По высоте
+      if (cell.maxHeight && door.height && door.height > cell.maxHeight) return;
+
+      const key = rowData.row + cell.num;
+      const occupied = (warehouse[key] || []).length;
+      const isFull = occupied >= cell.capacity;
+      if (isFull) return;
+
+      // Приоритет: уже есть двери из этого заказа → +100
+      const sameOrderHere = (warehouse[key] || []).some(d => d.orderNum === orderNum);
+      // Приоритет зоны: Y=3 (45%), X=2 (20%), Z=1 (35%, но обычные двери — низкий приоритет)
+      const zonePriority = isMirror ? 100 : (
+        rowData.zone === 'y' ? 45 :
+        rowData.zone === 'x' ? 20 :
+        rowData.zone === 'z' ? 5 :  // обычные в зону Z — последняя надежда
+        0
+      );
+      // Заполняем менее заполненные ячейки первыми
+      const fillness = occupied / cell.capacity;
+      const score = (sameOrderHere ? 200 : 0) + zonePriority + (1 - fillness) * 30;
+      candidates.push({ key, cell, rowData, score });
+    });
+  });
+
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0] ? candidates[0].key : null;
+}
+
+// Размещаем дверь (вызывается из prod_doors.html при печати этикетки)
+function placeDoorInWarehouse(door) {
+  const wh = loadWarehouse();
+  // Уже размещена?
+  let existingKey = null;
+  Object.entries(wh).forEach(([k, list]) => {
+    if (list.some(d => d.article === door.article && d.orderNum === door.orderNum && d.unit === door.unit)) {
+      existingKey = k;
+    }
+  });
+  if (existingKey) return existingKey;
+
+  const cellKey = pickCellForDoor(door, wh, door.orderNum);
+  if (!cellKey) return null; // склад полный
+  if (!wh[cellKey]) wh[cellKey] = [];
+  wh[cellKey].push({
+    orderNum: door.orderNum,
+    article: door.article,
+    width: door.width,
+    height: door.height,
+    side: door.side,
+    color: door.color,
+    isKorob: door.isKorob,
+    hasMirror: door.hasMirror,
+    placedAt: Date.now(),
+  });
+  saveWarehouse(wh);
+  return cellKey;
+}
+
+// =============================================================================
+// СОСТОЯНИЕ И ФИЛЬТРЫ
+// =============================================================================
+let _selectedCell = null;
+let _searchQuery = '';
+let _filterZone = '';
+let _filterStatus = '';
+
+// =============================================================================
+// РЕНДЕР СКЛАДА
+// =============================================================================
+function getCellState(cell, wh) {
+  const key = cell.row + cell.num;
+  const occupied = (wh[key] || []).length;
+  const ratio = occupied / cell.capacity;
+  let state = 'empty';
+  if (ratio >= 1) state = 'full';
+  else if (ratio > 0) state = 'partial';
+  return { occupied, capacity: cell.capacity, state, key };
+}
+
+function render() {
+  const wh = loadWarehouse();
+  const grid = document.getElementById('warehouse-grid');
+
+  // Вычисляем какие ячейки матчатся под поиск
+  const matchedCells = new Set();
+  if (_searchQuery) {
+    const q = _searchQuery.trim().toLowerCase();
+    Object.entries(wh).forEach(([key, doors]) => {
+      doors.forEach(d => {
+        const hay = ((d.orderNum || '') + ' ' + (d.article || '')).toLowerCase();
+        if (hay.includes(q)) matchedCells.add(key);
+      });
+    });
+  }
+
+  // Группируем по зонам
+  const zones = {
+    z: { title: 'Зона Z — зеркала/стёкла (KLMN)', tag: 'Z', cls: 'z', rows: ['K','L','M','N'] },
+    x: { title: 'Зона X — средняя (OP)', tag: 'X', cls: 'x', rows: ['O','P'] },
+    y: { title: 'Зона Y — основная (ABCDEFGH)', tag: 'Y', cls: 'y', rows: ['A','B','C','D','E','F','G','H'] },
+    reserved: { title: 'Резерв перегородок (IJ)', tag: 'R', cls: '', rows: ['I','J'] },
+  };
+
+  let html = '';
+  let totalCells = 0, totalCapacity = 0, totalUsed = 0;
+
+  Object.entries(zones).forEach(([zoneKey, zone]) => {
+    if (_filterZone && _filterZone !== zoneKey && zoneKey !== 'reserved') return;
+
+    let zoneCells = 0, zoneCap = 0, zoneUsed = 0;
+    let rowsHtml = '';
+
+    zone.rows.forEach(rowKey => {
+      const rowData = WAREHOUSE_STRUCTURE[rowKey];
+      if (!rowData) return;
+
+      if (rowData.isReserved) {
+        rowsHtml += `
+          <div class="row-block reserved">
+            <div class="row-label">${rowKey}</div>
+            <div class="row-cells">Резерв под перегородки</div>
+          </div>`;
+        return;
+      }
+
+      const cellsHtml = rowData.cells.map(cell => {
+        const st = getCellState(cell, wh);
+        totalCells++; totalCapacity += st.capacity; totalUsed += st.occupied;
+        zoneCells++; zoneCap += st.capacity; zoneUsed += st.occupied;
+
+        // Применяем фильтр по статусу
+        if (_filterStatus && st.state !== _filterStatus) return '';
+
+        const isMatched = matchedCells.has(st.key);
+        const isOver = cell.isOversize ? '<span class="cell-osize-mark">НГ</span>' : '';
+        return `
+          <div class="cell ${st.state} ${isMatched ? 'matched' : ''}"
+               onclick="openCellModal('${st.key}')"
+               title="${cell.isOversize ? 'Негабарит ' : ''}Ячейка ${st.key} — ${st.occupied}/${st.capacity}">
+            ${isOver}
+            <div class="cell-num">${st.key}</div>
+            <div class="cell-meta">${st.occupied}/${st.capacity}</div>
+          </div>`;
+      }).join('');
+
+      if (cellsHtml.trim()) {
+        rowsHtml += `
+          <div class="row-block">
+            <div class="row-label">${rowKey}</div>
+            <div class="row-cells">${cellsHtml}</div>
+            <div class="row-meta">Занято<br><b>${zoneUsed}/${zoneCap}</b></div>
+          </div>`;
+      }
+    });
+
+    if (rowsHtml) {
+      const pct = zoneCap > 0 ? Math.round(zoneUsed * 100 / zoneCap) : 0;
+      html += `
+        <div class="zone">
+          <div class="zone-header">
+            <h2>${zone.title}</h2>
+            ${zone.cls ? `<span class="zone-tag ${zone.cls}">${zone.tag}</span>` : ''}
+            <span class="zone-meta">Занято: <b>${zoneUsed}/${zoneCap}</b> · Загрузка <b>${pct}%</b></span>
+          </div>
+          ${rowsHtml}
+        </div>`;
+    }
+  });
+
+  if (!html) {
+    html = '<div class="empty-state"><h3>По фильтрам ничего не найдено</h3></div>';
+  }
+  grid.innerHTML = html;
+
+  // Шапочные счётчики
+  document.getElementById('stat-used').textContent = totalUsed;
+  document.getElementById('stat-total').textContent = totalCapacity;
+  document.getElementById('stat-doors').textContent = totalUsed;
+  document.getElementById('stat-load').textContent = totalCapacity > 0 ? Math.round(totalUsed * 100 / totalCapacity) + '%' : '0%';
+
+  // ─── Блок результатов поиска ───
+  renderSearchResults(wh);
+}
+
+function renderSearchResults(wh) {
+  const block = document.getElementById('search-results');
+  const titleEl = document.getElementById('search-results-title');
+  const listEl = document.getElementById('search-results-list');
+  const takeAllBtn = document.getElementById('btn-take-all-order');
+
+  if (!_searchQuery) {
+    block.style.display = 'none';
+    return;
+  }
+  block.style.display = '';
+
+  const q = _searchQuery.trim().toLowerCase();
+  // Собираем все совпавшие двери: { cellKey, idx, door }
+  const matches = [];
+  Object.entries(wh).forEach(([key, doors]) => {
+    doors.forEach((d, idx) => {
+      const hay = ((d.orderNum || '') + ' ' + (d.article || '')).toLowerCase();
+      if (hay.includes(q)) matches.push({ cellKey: key, idx, door: d });
+    });
+  });
+
+  // Группируем по orderNum
+  const byOrder = {};
+  matches.forEach(m => {
+    const on = m.door.orderNum || '?';
+    if (!byOrder[on]) byOrder[on] = [];
+    byOrder[on].push(m);
+  });
+
+  if (matches.length === 0) {
+    titleEl.textContent = `Не найдено: «${_searchQuery}»`;
+    takeAllBtn.style.display = 'none';
+    listEl.innerHTML = `<div style="padding:14px; color:var(--ink-3); font-size:13px;">На складе нет позиций по этому запросу. Возможно заказ ещё не дошёл до упаковки или уже отгружен.</div>`;
+    return;
+  }
+
+  // Заголовок
+  const orderNums = Object.keys(byOrder);
+  const cells = new Set(matches.map(m => m.cellKey));
+  titleEl.textContent = `Найдено: ${matches.length} позиц(ий) в ${cells.size} ячейке(ах) · Заказ(ов): ${orderNums.length}`;
+
+  // Если ровно один заказ — показываем кнопку «забрать весь заказ»
+  if (orderNums.length === 1) {
+    const on = orderNums[0];
+    takeAllBtn.style.display = '';
+    takeAllBtn.textContent = `📤 Забрать весь заказ ${on} — отгрузить ${matches.length} позиц(ий)`;
+    takeAllBtn.onclick = () => takeWholeOrder(on);
+  } else {
+    takeAllBtn.style.display = 'none';
+  }
+
+  // Список найденного — группами по заказам
+  let html = '';
+  Object.entries(byOrder).forEach(([on, list]) => {
+    html += `<div style="margin-bottom:14px; padding:12px; background:var(--accent-soft); border-radius:8px;">`;
+    html += `<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">`;
+    html += `<span class="mono" style="font-weight:800; font-size:14px; color:var(--ink);">${on}</span>`;
+    html += `<span style="color:var(--ink-3); font-size:12px;">${list.length} позиц(ий)</span>`;
+    if (orderNums.length > 1) {
+      html += `<button onclick="takeWholeOrder('${on}')" style="margin-left:auto; padding:6px 12px; background:var(--green); color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight:700; font-size:11.5px;">📤 Забрать заказ</button>`;
+    }
+    html += `</div>`;
+
+    list.forEach(m => {
+      const d = m.door;
+      html += `
+        <div style="display:flex; align-items:center; gap:10px; padding:8px 10px; background:#fff; border:1px solid var(--border-soft); border-radius:6px; margin-bottom:4px; font-size:12.5px;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; min-width:36px; padding:4px 8px; background:var(--ink); color:#fff; border-radius:4px; font-family:'JetBrains Mono', monospace; font-weight:800; font-size:13px;">${m.cellKey}</span>
+          <span class="mono" style="color:var(--ink-2); min-width:160px; font-size:11px;">${d.article}</span>
+          <span style="color:var(--ink-3); flex:1;">${d.width}×${d.height}${d.isKorob ? ' · 🟫 короб' : ' · 🚪 ' + (d.side === 'left' ? 'левое' : 'правое')}${d.hasMirror ? ' · зеркало' : ''}</span>
+          <button onclick="openCellModal('${m.cellKey}')" style="padding:5px 10px; background:#fff; border:1px solid var(--border); border-radius:5px; cursor:pointer; font-size:11px; font-weight:700;">📂 Открыть ячейку</button>
+          <button onclick="takeOne('${m.cellKey}', ${m.idx})" style="padding:5px 10px; background:var(--green); color:#fff; border:none; border-radius:5px; cursor:pointer; font-size:11px; font-weight:700;">✓ Забрали</button>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+  listEl.innerHTML = html;
+}
+
+// Забрать всю одну дверь (без открытия модалки)
+function takeOne(cellKey, idx) {
+  const wh = loadWarehouse();
+  const d = (wh[cellKey] || [])[idx];
+  if (!d) return;
+  if (!confirm(`Забрать ${d.article} (заказ ${d.orderNum}) из ячейки ${cellKey}?`)) return;
+  shipDoor(cellKey, idx);
+}
+
+// Отгрузить весь заказ — все позиции со всех ячеек
+function takeWholeOrder(orderNum) {
+  const wh = loadWarehouse();
+  const targets = [];
+  Object.entries(wh).forEach(([key, list]) => {
+    list.forEach((d, idx) => {
+      if (d.orderNum === orderNum) targets.push({ cellKey: key, idx, door: d });
+    });
+  });
+  if (targets.length === 0) return;
+  if (!confirm(`Отгрузить ВЕСЬ заказ ${orderNum}?\n\nБудет забрано ${targets.length} позиц(ий) из ${new Set(targets.map(t => t.cellKey)).size} ячеек(и).\n\nДействие необратимо.`)) return;
+
+  // Удаляем по убыванию idx чтобы не сломать индексы
+  const byCell = {};
+  targets.forEach(t => {
+    if (!byCell[t.cellKey]) byCell[t.cellKey] = [];
+    byCell[t.cellKey].push(t.idx);
+  });
+  Object.entries(byCell).forEach(([key, indexes]) => {
+    indexes.sort((a, b) => b - a);
+    indexes.forEach(idx => wh[key].splice(idx, 1));
+    if (wh[key].length === 0) delete wh[key];
+  });
+  saveWarehouse(wh);
+
+  // Помечаем все stages как отгружено
+  const stages = loadStages();
+  stages.forEach(s => {
+    if (s.orderNum === orderNum) {
+      s.shippedAt = new Date().toISOString();
+      s.status = 'shipped';
+    }
+  });
+  localStorage.setItem(STAGES_KEY, JSON.stringify(stages));
+
+  alert(`✓ Заказ ${orderNum} отгружен. Позиций забрано: ${targets.length}`);
+  render();
+}
+
+// =============================================================================
+// МОДАЛКА ЯЧЕЙКИ
+// =============================================================================
+function openCellModal(cellKey) {
+  _selectedCell = cellKey;
+  const wh = loadWarehouse();
+  const doors = wh[cellKey] || [];
+
+  // Найдём capacity
+  const row = cellKey[0];
+  const num = parseInt(cellKey.slice(1), 10);
+  const cellInfo = (WAREHOUSE_STRUCTURE[row]?.cells || []).find(c => c.num === num);
+  const cap = cellInfo ? cellInfo.capacity : 0;
+
+  document.getElementById('cell-title').textContent = `Ячейка ${cellKey}`;
+  document.getElementById('cell-meta-info').textContent = `${doors.length} из ${cap} мест занято${cellInfo?.isOversize ? ' · НЕГАБАРИТ' : ''}`;
+
+  const list = document.getElementById('cell-doors-list');
+  const emptyMsg = document.getElementById('cell-empty-msg');
+  const shipBtn = document.getElementById('btn-ship-cell');
+
+  if (doors.length === 0) {
+    list.innerHTML = '';
+    emptyMsg.style.display = '';
+    shipBtn.style.display = 'none';
+  } else {
+    emptyMsg.style.display = 'none';
+    shipBtn.style.display = '';
+    list.innerHTML = doors.map((d, i) => `
+      <div class="door-row">
+        <span class="ord">${d.orderNum}</span>
+        <span class="art">${d.article}</span>
+        <span class="info">${d.width}×${d.height} · ${d.isKorob ? 'короб' : (d.side === 'left' ? 'левое' : 'правое')}${d.hasMirror ? ' · зеркало' : ''}</span>
+        <div class="actions">
+          <button onclick="reprintLabel('${cellKey}', ${i})" title="Перепечатать этикетку">🖨</button>
+          <button class="primary" onclick="shipDoor('${cellKey}', ${i})">📤 Забрали</button>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('cell-modal').classList.add('open');
+}
+function closeCellModal() {
+  document.getElementById('cell-modal').classList.remove('open');
+  _selectedCell = null;
+}
+
+// Отгрузить одну дверь — удаляет из ячейки, обновляет статус заказа
+function shipDoor(cellKey, idx) {
+  const wh = loadWarehouse();
+  const doors = wh[cellKey] || [];
+  if (!doors[idx]) return;
+  const d = doors[idx];
+  if (!confirm(`Отгрузить ${d.article} (заказ ${d.orderNum})?`)) return;
+  doors.splice(idx, 1);
+  if (doors.length === 0) delete wh[cellKey];
+  else wh[cellKey] = doors;
+  saveWarehouse(wh);
+  // Помечаем все stages этой позиции как «отгружено»
+  const stages = loadStages();
+  stages.forEach(s => {
+    if (s.article === d.article && s.orderNum === d.orderNum) {
+      s.shippedAt = new Date().toISOString();
+      s.status = 'shipped';
+    }
+  });
+  localStorage.setItem(STAGES_KEY, JSON.stringify(stages));
+  render();
+  openCellModal(cellKey);
+}
+
+function shipAllInCell() {
+  if (!_selectedCell) return;
+  const wh = loadWarehouse();
+  const doors = wh[_selectedCell] || [];
+  if (doors.length === 0) return;
+  if (!confirm(`Отгрузить ВСЕ ${doors.length} дверь(ей) из ячейки ${_selectedCell}?`)) return;
+  const stages = loadStages();
+  doors.forEach(d => {
+    stages.forEach(s => {
+      if (s.article === d.article && s.orderNum === d.orderNum) {
+        s.shippedAt = new Date().toISOString();
+        s.status = 'shipped';
+      }
+    });
+  });
+  localStorage.setItem(STAGES_KEY, JSON.stringify(stages));
+  delete wh[_selectedCell];
+  saveWarehouse(wh);
+  render();
+  closeCellModal();
+}
+
+// =============================================================================
+// ЭТИКЕТКА
+// =============================================================================
+function reprintLabel(cellKey, idx) {
+  const wh = loadWarehouse();
+  const door = (wh[cellKey] || [])[idx];
+  if (!door) return;
+  showLabel(door, cellKey);
+}
+
+function showLabel(door, cellKey) {
+  const isKorob = door.isKorob;
+  // QR — простая ссылка на api.qrserver.com
+  const qrData = encodeURIComponent(`ART:${door.article};ORD:${door.orderNum}`);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${qrData}`;
+
+  const sideLabel = door.side === 'left' ? 'Левое' : 'Правое';
+  const sideTwo = door.sideTwo || (door.color === '#1a1a1a' ? 'AL чёрный' : 'AL белый');
+  const torec = door.hasAlKromka ? 'AL-кромка' : 'МДФ';
+
+  const labelHtml = `
+    <div class="label-preview" id="label-printable">
+      <h3>${isKorob ? '🟫 КОРОБ' : '🚪 ПОЛОТНО'}</h3>
+      <div class="row"><span>Заказ:</span><b>${door.orderNum}</b></div>
+      <div class="row"><span>Артикул:</span><b>${door.article}</b></div>
+      <div class="row"><span>Размер:</span><b>${door.width} × ${door.height} мм</b></div>
+      ${!isKorob ? `<div class="row"><span>Открывание:</span><b>${sideLabel}</b></div>` : ''}
+      ${!isKorob ? `<div class="row"><span>Сторона 1:</span><b>${door.sideOne || 'Эмаль'}</b></div>` : ''}
+      ${!isKorob ? `<div class="row"><span>Сторона 2:</span><b>${sideTwo}</b></div>` : ''}
+      ${!isKorob ? `<div class="row"><span>Торец:</span><b>${torec}</b></div>` : ''}
+      <div class="qr">
+        <img src="${qrUrl}" alt="QR" style="width:100%; height:100%;" onerror="this.style.display='none'; this.parentElement.textContent='QR'">
+      </div>
+      <div class="cell-big">
+        <div class="cell-lbl">Ячейка склада</div>
+        <div class="cell-code">${cellKey}</div>
+      </div>
+      <div style="text-align:center; margin-top:10px; font-size:9px; color:#666;">
+        Печать: ${new Date().toLocaleString('ru-RU')}
+      </div>
+    </div>`;
+
+  document.getElementById('label-content').innerHTML = labelHtml;
+  document.getElementById('label-modal').classList.add('open');
+
+  document.getElementById('btn-print-label').onclick = () => {
+    const labelEl = document.getElementById('label-printable');
+    const w = window.open('', '_blank', 'width=400,height=600');
+    w.document.write(`
+      <html>
+      <head>
+        <title>Этикетка ${door.article}</title>
+        <style>
+          body { font-family: 'JetBrains Mono', monospace; padding: 14px; margin: 0; }
+          ${document.querySelector('style').innerHTML}
+        </style>
+      </head>
+      <body onload="window.print(); setTimeout(() => window.close(), 300);">
+        ${labelEl.outerHTML}
+      </body>
+      </html>
+    `);
+    w.document.close();
+  };
+}
+
+function closeLabelModal() {
+  document.getElementById('label-modal').classList.remove('open');
+}
+
+// =============================================================================
+// ВНЕШНИЙ API: вызывается из prod_doors.html при «Завершить производство»
+// Через window.warehouseAPI (если открыт popup) или через storage event
+// =============================================================================
+window.warehouseAPI = {
+  placeDoorInWarehouse,
+  showLabel,
+};
+
+// =============================================================================
+// ИНИЦИАЛИЗАЦИЯ
+// =============================================================================
+// Если в URL ?search= — подставляем значение
+const urlParams = new URLSearchParams(location.search);
+const initSearch = urlParams.get('search');
+if (initSearch) {
+  _searchQuery = initSearch;
+  document.getElementById('search-input').value = initSearch;
+}
+
+document.getElementById('search-input').addEventListener('input', e => {
+  _searchQuery = e.target.value;
+  render();
+});
+document.getElementById('filter-zone').addEventListener('change', e => {
+  _filterZone = e.target.value;
+  render();
+});
+document.getElementById('filter-status').addEventListener('change', e => {
+  _filterStatus = e.target.value;
+  render();
+});
+document.getElementById('btn-clear-filters').addEventListener('click', () => {
+  _searchQuery = '';
+  _filterZone = '';
+  _filterStatus = '';
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-zone').value = '';
+  document.getElementById('filter-status').value = '';
+  render();
+});
+
+// Закрытие модалок по клику вне
+document.querySelectorAll('.modal-back').forEach(m => {
+  m.addEventListener('click', e => {
+    if (e.target === m) m.classList.remove('open');
+  });
+});
+
+window.addEventListener('storage', (e) => {
+  if (e.key === WH_KEY) render();
+});
+
+render();
+</script>
+
+</body>
+</html>
