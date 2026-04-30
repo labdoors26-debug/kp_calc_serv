@@ -1,5 +1,5 @@
 (function () {
-  var API = 'api.php';
+  var API = '../server/api.php';
   var TRACKED = ['mc-warehouse-v1', 'idloft_prices'];
   var _orig = localStorage.setItem.bind(localStorage);
 
