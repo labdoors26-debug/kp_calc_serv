@@ -1,5 +1,0 @@
-# kp-calculator
-kp-calculator
-
- 
-
